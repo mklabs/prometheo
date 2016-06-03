@@ -21,6 +21,36 @@
 
 ---
 
+## Endpoints
+
+    # instant query at a single point in time
+    GET /api/v1/query
+    URL query parameters: query, time
+
+    # expression query over a range of time
+    GET /api/v1/query_range
+    URL query parameters: query, start, end, step
+
+    # list of time series that match a certain label set
+    GET /api/v1/series
+    URL query parameters: match
+
+    # list of label values for a provided label name
+    GET /api/v1/label/<label_name>/values
+
+    # deletes matched series entirely from a Prometheus server
+    DELETE /api/v1/series
+    URL query parameters: match
+
+    query=<string>:                   Prometheus expression query string.
+    time=<rfc3339 | unix_timestamp>:  Evaluation timestamp. Optional. (default: current server time)
+    start=<rfc3339 | unix_timestamp>: Start timestamp.
+    end=<rfc3339 | unix_timestamp>:   End timestamp.
+    step=<duration>:                  Query resolution step width.
+    match[]=<series_selector>:        Repeated series selector argument that selects the series to return or delete.
+
+---
+
 > ~ https://prometheus.io/docs/querying/api/
 
 ## Expression queries
@@ -38,7 +68,7 @@ The following endpoint evaluates an instant query at a single point in time:
 
 The data section of the query result has the following format:
 
-```json
+```js
 {
   "resultType": "matrix" | "vector" | "scalar" | "string",
   "result": <value>
@@ -65,7 +95,7 @@ The following endpoint evaluates an expression query over a range of time:
 
 The data section of the query result has the following format:
 
-```json
+```js
 {
   "resultType": "matrix",
   "result": <value>
@@ -78,7 +108,7 @@ The following example evaluates the expression up over a 30-second range with a 
 
 http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s'
 
-```json
+```js
 {
    "status" : "success",
    "data" : {
@@ -133,7 +163,7 @@ or process_start_time_seconds{job="prometheus"}:
 
 http://localhost:9090/api/v1/series?match[]=up&match[]=process_start_time_seconds{job="prometheus"}
 
-```json
+```js
 {
    "status" : "success",
    "data" : [
@@ -160,12 +190,15 @@ http://localhost:9090/api/v1/series?match[]=up&match[]=process_start_time_second
 
 The following endpoint returns a list of label values for a provided label name:
 
-GET /api/v1/label/<label_name>/values
+    GET /api/v1/label/<label_name>/values
+
 The data section of the JSON response is a list of string label names.
 
 This example queries for all label values for the job label:
 
-$ curl http://localhost:9090/api/v1/label/job/values
+    $ curl http://localhost:9090/api/v1/label/job/values
+
+```json
 {
    "status" : "success",
    "data" : [
@@ -173,6 +206,7 @@ $ curl http://localhost:9090/api/v1/label/job/values
       "prometheus"
    ]
 }
+```
 
 ## Deleting series
 
@@ -185,7 +219,7 @@ The following endpoint deletes matched series entirely from a Prometheus server:
 
 The data section of the JSON response has the following format:
 
-```json
+```js
 {
   "numDeleted": <number of deleted series>
 }
@@ -196,7 +230,7 @@ or process_start_time_seconds{job="prometheus"}:
 
     $ curl -XDELETE -g 'http://localhost:9090/api/v1/series?match[]=up&match[]=process_start_time_seconds{job="prometheus"}'
 
-```json
+```js
 {
    "status" : "success",
    "data" : {
@@ -217,7 +251,7 @@ numbers.
 
 Range vectors are returned as result type matrix. The corresponding result property has the following format:
 
-```json
+```js
 [
   {
     "metric": { "<label_name>": "<label_value>", ... },
@@ -232,7 +266,7 @@ Range vectors are returned as result type matrix. The corresponding result prope
 
 Instant vectors are returned as result type vector. The corresponding result property has the following format:
 
-```json
+```js
 [
   {
     "metric": { "<label_name>": "<label_value>", ... },
