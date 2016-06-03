@@ -21,6 +21,36 @@
 
 ---
 
+## JS API
+
+```js
+const client = require('prometheo')({
+  endpoint: 'http://localhost:9090/api/v1'
+});
+
+client('/query', { query: '', time: new Date() });
+client.query();
+
+// etc ...
+```
+
+### time
+
+`time` query string should be able to understand and use momentjs instances.
+
+```js
+const moment = require('moment');
+client('/query', { query: '', time: moment() });
+```
+
+as well as [human-interval][] inputs.
+
+```js
+client('/query_range', { start: 'one day ago', end: '2 hours ago' });
+```
+
+[human-interval]: https://github.com/rschmukler/human-interval#readme
+
 ## Endpoints
 
     # instant query at a single point in time
